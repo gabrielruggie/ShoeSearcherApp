@@ -94,17 +94,6 @@ def testGoogle():
     time.sleep(5)
     bot.quitSearch()
 
-def testRunner():
-    # If you get Flight club to work, then it will work in runner
-    # Doesn't work for virtual. Research
-    walker = Runner()
-    walker.setSearchItem("Jordan 1")
-    walker.setSearchCapacity(10)
-    walker.scrapeWebsites()
-    walker.showArrays()
-
-    print(walker.allContent)
-
 def testNike():
     web = "https://www.nike.com/"
     search_xpath = "/html/body/div[1]/div[3]/header/div/div[1]/div[2]/div/div/div[1]/div/div/input"
@@ -129,5 +118,20 @@ def testNike():
     print(bot.prices)
     print(len(bot.prices))
     print(bot.content)
+
+def testRunner():
+    # If you get Flight club to work, then it will work in runner
+    # Doesn't work for virtual. Research
+    walker = Runner()
+    walker.setSearchItem("Jordan 1")
+    # Neccessary
+    walker.setSearchCapacity(10)
+    walker.scrapeWebsites()
+    # Not Neccessary
+    walker.showArrays()
+    # Not Neccessary
+    print(walker.allContent)
+
+    walker.createDataFrame()
 
 testRunner()
