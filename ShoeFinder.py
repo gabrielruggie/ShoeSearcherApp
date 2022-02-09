@@ -36,24 +36,40 @@ class Runner:
 
         self.searchCap = cap
 
-    def sortContent(self):
-        content = {}
-        sorted_items = []
+    def createMap(self):
+        # Create Map containing all the scraped information
+        # Easiest for Pandas to read and handle
+        # Sorting will be done by Pandas
+        self.allContent = {
+                    "Name":self.shoeNames,
+                    "Price":[int(float(price.replace("$", ""))) for price in self.shoePrices],
+                    "Link":self.shoeLinks
+        }
 
-        for i in range(len(self.shoeNames)):
-            # Must convert to float because some prices are formed like $84.00
-            # Convert to float than int to bypass this error
-            content[self.shoeNames[i]] = {'price':int(float(self.shoePrices[i].replace("$", ""))),
-            'link':self.shoeLinks[i]}
-        # Lambda function used to sort list based on the price as an int
-        sorted_items = sorted(content.items(), key=lambda x: x[1]['price'])
+    def createDataFrame(self):
+        # Creating Panda data frame
+        frame = pd.DataFrame(self.allContent)
+        # Sort based on price
+        sortedFrame = frame.sort_values(by=['Price'])
+        # Convert to HTML script
+        results = sortedFrame.to_html()
 
-        self.allContent = {item[0]:item[1] for item in sorted_items}
+        with open('results.html', 'w') as html:
+            html.write(self.htmlHeader() + "\n")
+
+        # TOD!!! Open this html file in separate tab
+        # ^^^ Temporary Fix, look up how to move html table to another html file
+        with open('results.html', 'a') as html:
+            # Write will overwrite anything currently in file, cannot add anything to
+            # results.html because it will be erased
+            html.write("<body>")
+            html.write(results)
+            html.write("</body>")
 
     # Sequentially Scraping all websites
     def scrapeWebsites(self):
         google = Google(self.searchCap)
-        '''
+        
         flightclub = FlightClub(self.searchCap)
         nike = Nike(self.searchCap)
 
@@ -76,7 +92,7 @@ class Runner:
         FC_bot.pageScrape()
         self.__extendArrays(FC_bot.names, FC_bot.prices, FC_bot.links)
         FC_bot.quitSearch()
-        '''
+
         shop = google.search_bot
         shop.findSearchbar()
         sleep(1)
@@ -86,20 +102,22 @@ class Runner:
         self.__extendArrays(shop.names, shop.prices, shop.links)
         shop.quitSearch()
 
-        self.sortContent()
+        self.createMap()
 
-    def createDataFrame(self):
-        data = pd.DataFrame()
-    
     def __extendArrays(self, shoe_names, shoe_prices, shoe_links):
         self.shoeNames.extend(shoe_names)
-        self.shoePrices.extend(shoe_prices)
+        self.shoePrices.extend([price.replace("+", "").replace(",", "") for price in shoe_prices])
         self.shoeLinks.extend(shoe_links)
 
     def showArrays(self):
         print(self.shoeNames)
         print(self.shoePrices)
         print(self.shoeLinks)
+
+    # Add Style Sheet to HTML file
+    def htmlHeader(self):
+        header = "<link rel=\"stylesheet\" href=\"styles.css\">"
+        return header
 
     def main(self):
         pass
