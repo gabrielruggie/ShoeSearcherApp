@@ -1,0 +1,8 @@
+loading....
+---------------------------|Show Searcher|------------------------------
+Welcome to the Shoe Seacher App! Follow the instructions below to get
+started!
+
+          Press [1] to view the last search results
+          Press [2] to start new search
+          Press [3] to exit 
