@@ -1,6 +1,8 @@
 # Web app tester methods
 from SearchBot import WebScrapper
-from ShoeFinder import Runner
+from ShoeFinder import Finder
+from browser import Results
+from ShoeApp import ShoeSearcherUI
 import time
 
 PATH = "/Users/gabrielruggie/Desktop/chromedriver"
@@ -123,7 +125,7 @@ def testRunner():
     # If you get Flight club to work, then it will work in runner
     # Doesn't work for virtual. Research
     walker = Runner()
-    walker.setSearchItem("Jordan 1")
+    walker.setSearchItem("Jordan")
     # Neccessary
     walker.setSearchCapacity(10)
     walker.scrapeWebsites()
@@ -134,4 +136,15 @@ def testRunner():
 
     walker.createDataFrame()
 
-testRunner()
+    rpage = Results('results.html')
+    rpage.showResults()
+
+
+# testRunner()
+
+def testApp():
+
+    walker = ShoeSearcherUI()
+    walker.open_application()
+
+testApp()
