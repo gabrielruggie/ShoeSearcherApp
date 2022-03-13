@@ -5,7 +5,10 @@ from WebObjects import Google
 from time import sleep
 import pandas as pd
 
-class Runner:
+# Shoe Finder Class that instantiates of Web Scaper to search 3 websites and scrape
+# its data. Stores collected data in 1 hash table and converts said hash table to
+# html file using Pandas
+class Finder:
 
     def __init__(self):
         # All links, names and prices from all websites
@@ -36,16 +39,47 @@ class Runner:
 
         self.searchCap = cap
 
+    # Create Map containing all the scraped information
+    # Easiest for Pandas to read and handle
+    # Sorting will be done by Pandas
     def createMap(self):
-        # Create Map containing all the scraped information
-        # Easiest for Pandas to read and handle
-        # Sorting will be done by Pandas
+        # Fix prices so they can be successfully converted to integers
+        self.fixPrices()
+
         self.allContent = {
                     "Name":self.shoeNames,
-                    "Price":[int(float(price.replace("$", ""))) for price in self.shoePrices],
+                    "Price":[int(price) for price in self.shoePrices],
                     "Link":self.shoeLinks
         }
 
+    # Removes period from nums in order to convert to integers
+    # Time Complexity: O(N)
+    def fixPrices(self):
+        fixedPrices = []
+        # Iterates through all the prices in self.shoePrices
+        for price in self.shoePrices:
+            temp = []
+            nums = list(price)
+
+            if '.' in nums:
+                index = nums.index('.')
+                temp = nums[0:index]
+            else:
+                # If there was no period then set temp to the entire number
+                temp = nums
+            # Create new string of price
+            newPrice = ''.join(temp)
+            # Edge case, if there was no price in the first place aka, empty string!
+            if len(newPrice) == 0:
+                newPrice = ''.join((newPrice, '0'))
+            # Add in price to new list immediately to not lose order of self.shoePrices
+            fixedPrices.append(newPrice)
+
+        # Reset self.shoePrices to fixed prices list
+        self.shoePrices = fixedPrices
+
+    # Creates the html file that will contain all the information collected from
+    # WebScrapper
     def createDataFrame(self):
         # Creating Panda data frame
         frame = pd.DataFrame(self.allContent)
@@ -53,13 +87,16 @@ class Runner:
         sortedFrame = frame.sort_values(by=['Price'])
         # Convert to HTML script
         results = sortedFrame.to_html()
+        # Path to results.html
+        path = "results.html"
 
-        with open('results.html', 'w') as html:
+        # Open cleared file to add header
+        with open(path, 'w') as html:
             html.write(self.htmlHeader() + "\n")
 
         # TOD!!! Open this html file in separate tab
         # ^^^ Temporary Fix, look up how to move html table to another html file
-        with open('results.html', 'a') as html:
+        with open(path, 'a') as html:
             # Write will overwrite anything currently in file, cannot add anything to
             # results.html because it will be erased
             html.write("<body>")
@@ -67,11 +104,13 @@ class Runner:
             html.write("</body>")
 
     # Sequentially Scraping all websites
+    # Every time this method is called, we clear all the previous data
     def scrapeWebsites(self):
         google = Google(self.searchCap)
-        
         flightclub = FlightClub(self.searchCap)
         nike = Nike(self.searchCap)
+        # Clear this instance's data every time we run a new search
+        self.clearData()
 
         # Scrape Nike
         # Set capacity through parameter
@@ -84,6 +123,7 @@ class Runner:
         self.__extendArrays(nike_bot.names, nike_bot.prices, nike_bot.links)
         nike_bot.quitSearch()
 
+        # Scrape FlightClub
         FC_bot = flightclub.search_bot
         FC_bot.findSearchbar()
         sleep(1)
@@ -93,6 +133,7 @@ class Runner:
         self.__extendArrays(FC_bot.names, FC_bot.prices, FC_bot.links)
         FC_bot.quitSearch()
 
+        # Scrape Google
         shop = google.search_bot
         shop.findSearchbar()
         sleep(1)
@@ -104,11 +145,14 @@ class Runner:
 
         self.createMap()
 
+    # Create arrays of names, prices, and links
+    # Removes, pluses, commas and dollar signs from prices
     def __extendArrays(self, shoe_names, shoe_prices, shoe_links):
         self.shoeNames.extend(shoe_names)
-        self.shoePrices.extend([price.replace("+", "").replace(",", "") for price in shoe_prices])
+        self.shoePrices.extend([price.replace("+", "").replace(",", "").replace("$", "") for price in shoe_prices])
         self.shoeLinks.extend(shoe_links)
 
+    # Prints arrays to console for testing purposes
     def showArrays(self):
         print(self.shoeNames)
         print(self.shoePrices)
@@ -119,5 +163,15 @@ class Runner:
         header = "<link rel=\"stylesheet\" href=\"styles.css\">"
         return header
 
-    def main(self):
-        pass
+    # Clears data to prevent html being overloaded and past results being shown
+    # in a new search
+    def clearData(self):
+        # Clears all arrays
+        self.shoeNames.clear()
+        self.shoePrices.clear()
+        self.shoeLinks.clear()
+
+        # Clears html file
+        path = "results.html"
+        with open(path, 'r+') as html:
+            html.truncate(0)
