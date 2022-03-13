@@ -139,6 +139,7 @@ class WebScrapper:
     # Allows Silent Background execution
     # Creates a virtual invisible display
     # Must be set before self.driver is created
+    # DOES NOT WORK, NEEDS RESEARCH 
     def setOptions(self):
         self.chrome = Options()
         self.chrome.add_argument("--headless")
